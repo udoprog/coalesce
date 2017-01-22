@@ -136,7 +136,7 @@ public class LocalSync implements Sync {
   }
 
   @Override
-  public AsyncFuture<Void> assign(final String memberId, final String taskId) {
+  public AsyncFuture<Void> assignTask(final String memberId, final String taskId) {
     return async.call(() -> {
       synchronized (memberLock) {
         final MemberCallback member = members.get(memberId);
@@ -156,7 +156,7 @@ public class LocalSync implements Sync {
   }
 
   @Override
-  public AsyncFuture<Void> unassign(final String memberId, final String taskId) {
+  public AsyncFuture<Void> unassignTask(final String memberId, final String taskId) {
     return async.call(() -> {
       synchronized (memberLock) {
         final MemberCallback member = members.get(memberId);

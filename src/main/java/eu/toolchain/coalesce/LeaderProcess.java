@@ -345,7 +345,7 @@ public class LeaderProcess implements LeaderCallback {
 
     for (final UnassignTask unassignTask : removed) {
       removals.add(() -> sync
-        .unassign(unassignTask.getMemberId(), unassignTask.getTaskId())
+        .unassignTask(unassignTask.getMemberId(), unassignTask.getTaskId())
         .directTransform(ignore -> {
           log.info("-task {} from {}", unassignTask.getTaskId(), unassignTask.getMemberId());
 
@@ -367,7 +367,7 @@ public class LeaderProcess implements LeaderCallback {
 
     for (final AssignTask assignTask : toAssign) {
       additions.add(() -> sync
-        .assign(assignTask.getMemberId(), assignTask.getTaskId())
+        .assignTask(assignTask.getMemberId(), assignTask.getTaskId())
         .directTransform(ignore -> {
           log.trace("+task {} to {}", assignTask.getTaskId(), assignTask.getMemberId());
 

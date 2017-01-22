@@ -245,7 +245,7 @@ public class ZookeeperSync implements LifeCycle, Sync {
   }
 
   @Override
-  public AsyncFuture<Void> assign(final String memberId, final String taskId) {
+  public AsyncFuture<Void> assignTask(final String memberId, final String taskId) {
     log.info("Assigning {}/{}", memberId, taskId);
 
     return bind(op -> op
@@ -257,7 +257,7 @@ public class ZookeeperSync implements LifeCycle, Sync {
   }
 
   @Override
-  public AsyncFuture<Void> unassign(final String memberId, final String taskId) {
+  public AsyncFuture<Void> unassignTask(final String memberId, final String taskId) {
     return bind(op -> op.delete()::inBackground,
       op -> op.forPath(ASSIGN + "/" + memberId + "/" + taskId)).directTransform(event -> null);
   }

@@ -27,12 +27,12 @@ public interface Sync {
   /**
    * Assign the given task from the given member.
    */
-  AsyncFuture<Void> assign(String memberId, String taskId);
+  AsyncFuture<Void> assignTask(String memberId, String taskId);
 
   /**
    * Unassign the given task from the given member.
    */
-  AsyncFuture<Void> unassign(String memberId, String taskId);
+  AsyncFuture<Void> unassignTask(String memberId, String taskId);
 
   @Data
   class AssignedTask {
