@@ -1,8 +1,8 @@
 package eu.toolchain.coalesce;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.TreeMultimap;
 import eu.toolchain.async.AsyncFramework;
 import eu.toolchain.async.AsyncFuture;
 import eu.toolchain.async.ResolvableFuture;
@@ -331,7 +331,7 @@ public class LeaderProcess implements LeaderCallback {
   }
 
   private Multimap<String, String> assignedToMap(final List<Sync.AssignedTask> assigned) {
-    final Multimap<String, String> map = TreeMultimap.create();
+    final Multimap<String, String> map = HashMultimap.create();
 
     for (final Sync.AssignedTask assignedTask : assigned) {
       map.put(assignedTask.getMemberId(), assignedTask.getTaskId());
