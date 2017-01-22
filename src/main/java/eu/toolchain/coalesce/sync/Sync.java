@@ -12,7 +12,7 @@ public interface Sync {
    * Register interest in becoming a leader, the given callback will be invoked when leadership is
    * attained.
    */
-  AsyncFuture<Void> registerLeader(LeaderCallback callback);
+  AsyncFuture<Listener> registerLeader(String leaderId, LeaderCallback callback);
 
   /**
    * Register a member with the given id.

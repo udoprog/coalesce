@@ -19,6 +19,8 @@ public interface ApplicationComponent
   extends EarlyComponent, ServerComponent, RpcComponent, SyncComponent, TaskSourceComponent {
   Managed<MemberProcess.SyncHandle> memberSync();
 
+  Managed<LeaderProcess.SyncHandle> leaderSync();
+
   LeaderProcess leader();
 
   MemberProcess member();

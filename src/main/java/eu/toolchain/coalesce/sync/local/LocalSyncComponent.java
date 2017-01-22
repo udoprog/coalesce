@@ -1,7 +1,6 @@
 package eu.toolchain.coalesce.sync.local;
 
 import dagger.Component;
-import eu.toolchain.coalesce.common.LifeCycle;
 import eu.toolchain.coalesce.dagger.EarlyComponent;
 import eu.toolchain.coalesce.sync.SyncComponent;
 import javax.inject.Singleton;
@@ -11,7 +10,4 @@ import javax.inject.Singleton;
 public interface LocalSyncComponent extends SyncComponent {
   @Override
   LocalSync sync();
-
-  @Override
-  LifeCycle syncLife();
 }

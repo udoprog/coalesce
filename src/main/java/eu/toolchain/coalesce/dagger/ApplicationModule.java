@@ -7,6 +7,7 @@ import eu.toolchain.async.AsyncFuture;
 import eu.toolchain.async.Managed;
 import eu.toolchain.async.ManagedSetup;
 import eu.toolchain.coalesce.CoalesceConfig;
+import eu.toolchain.coalesce.LeaderProcess;
 import eu.toolchain.coalesce.MemberProcess;
 import eu.toolchain.coalesce.sync.Sync;
 import javax.inject.Named;
@@ -50,10 +51,27 @@ public class ApplicationModule {
       }
 
       @Override
-      public AsyncFuture<Void> destruct(
-        final MemberProcess.SyncHandle value
-      ) throws Exception {
+      public AsyncFuture<Void> destruct(final MemberProcess.SyncHandle value) throws Exception {
         return value.getMemberListener().cancel();
+      }
+    });
+  }
+
+  @Provides
+  @Singleton
+  public Managed<LeaderProcess.SyncHandle> leaderSync(
+    final AsyncFramework async, @Named("localId") final String localId, final Sync sync,
+    final LeaderProcess leader
+  ) {
+    return async.managed(new ManagedSetup<LeaderProcess.SyncHandle>() {
+      @Override
+      public AsyncFuture<LeaderProcess.SyncHandle> construct() throws Exception {
+        return sync.registerLeader(localId, leader).directTransform(LeaderProcess.SyncHandle::new);
+      }
+
+      @Override
+      public AsyncFuture<Void> destruct(final LeaderProcess.SyncHandle value) throws Exception {
+        return value.getLeaderListener().cancel();
       }
     });
   }

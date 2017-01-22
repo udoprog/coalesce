@@ -17,11 +17,12 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import lombok.RequiredArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -46,24 +47,29 @@ public class LocalSync implements Sync {
   private final Object leaderLock = new Object();
   private final Object assignedLock = new Object();
 
-  private volatile boolean stopped = false;
-
   @Inject
   public LocalSync(final AsyncFramework async, final ExecutorService executor) {
     this.async = async;
     this.executor = executor;
   }
 
-  public AsyncFuture<Void> stop() {
-    this.stopped = true;
-    return async.resolved();
-  }
-
   @Override
-  public AsyncFuture<Void> registerLeader(final LeaderCallback callback) {
+  public AsyncFuture<Listener> registerLeader(
+    final String leaderId, final LeaderCallback callback
+  ) {
     return async.call(() -> {
-      executor.execute(new LeaderRunner(callback));
-      return null;
+      final AtomicBoolean stopping = new AtomicBoolean();
+      executor.execute(new LeaderRunner(leaderId, callback, stopping));
+
+      return (Listener) () -> {
+        stopping.set(true);
+
+        synchronized (leaderLock) {
+          leaderLock.notifyAll();
+        }
+
+        return async.resolved();
+      };
     });
   }
 
@@ -175,9 +181,11 @@ public class LocalSync implements Sync {
     });
   }
 
-  @RequiredArgsConstructor
+  @Data
   private class LeaderRunner implements Runnable {
+    private final String leaderId;
     private final LeaderCallback callback;
+    private final AtomicBoolean stopped;
 
     @Override
     public void run() {
@@ -189,15 +197,15 @@ public class LocalSync implements Sync {
     }
 
     private void guardedRun() throws InterruptedException {
-      while (!stopped) {
+      while (!stopped.get()) {
         final MemberChanges memberChanges;
 
         synchronized (leaderLock) {
-          while (currentLeader != null && !stopped) {
+          while (currentLeader != null && !stopped.get()) {
             leaderLock.wait();
           }
 
-          if (stopped) {
+          if (stopped.get()) {
             break;
           }
 

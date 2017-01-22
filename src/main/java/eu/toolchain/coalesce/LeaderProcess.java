@@ -9,6 +9,7 @@ import eu.toolchain.async.ResolvableFuture;
 import eu.toolchain.async.StreamCollector;
 import eu.toolchain.coalesce.model.TaskMetadata;
 import eu.toolchain.coalesce.sync.LeaderCallback;
+import eu.toolchain.coalesce.sync.Listener;
 import eu.toolchain.coalesce.sync.Sync;
 import eu.toolchain.coalesce.taskstorage.TaskSource;
 import java.util.ArrayList;
@@ -37,7 +38,6 @@ public class LeaderProcess implements LeaderCallback {
   private final TaskSource taskSource;
   private final Sync sync;
   private final int syncParallelism;
-  private final ScheduledExecutorService scheduler;
   private final ResolvableFuture<Void> join;
 
   /* refresh-members */
@@ -64,7 +64,6 @@ public class LeaderProcess implements LeaderCallback {
     this.taskSource = taskSource;
     this.sync = sync;
     this.syncParallelism = syncParallelism;
-    this.scheduler = scheduler;
     this.join = async.future();
 
     this.refreshAssignments =
@@ -423,5 +422,13 @@ public class LeaderProcess implements LeaderCallback {
     public Void end(final int resolved, final int failed, final int cancelled) throws Exception {
       return null;
     }
+  }
+
+  /**
+   * Handle for this member running.
+   */
+  @Data
+  public static class SyncHandle {
+    private final Listener leaderListener;
   }
 }

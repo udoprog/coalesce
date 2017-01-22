@@ -367,12 +367,16 @@ public class Coalesce {
 
             /* run leader thread */
       postStart.add(LifeCycleRegistry.namedHook("leader thread", () -> {
-        return component.sync().registerLeader(component.leader());
+        return component.leaderSync().start();
       }));
 
-      stopping.add(LifeCycleRegistry.namedHook("leader thread", component.leader()::stop));
+      stopping.add(LifeCycleRegistry.namedHook("leader thread", () -> {
+        return component.leaderSync().stop().lazyTransform(ignore -> {
+          return component.leader().stop();
+        });
+      }));
 
-            /* run member thread */
+      /* run member thread */
       final MemberProcess member = component.member();
 
       postStart.add(LifeCycleRegistry.namedHook("member thread", () -> {
@@ -383,8 +387,8 @@ public class Coalesce {
       }));
 
       stopping.add(LifeCycleRegistry.namedHook("member thread", () -> {
-        return member.stop().lazyTransform(ignore -> {
-          return component.memberSync().stop();
+        return component.memberSync().stop().lazyTransform(ignore -> {
+          return member.stop();
         });
       }));
 

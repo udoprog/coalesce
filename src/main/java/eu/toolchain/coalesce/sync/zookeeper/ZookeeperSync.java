@@ -47,7 +47,6 @@ public class ZookeeperSync implements LifeCycle, Sync {
   private final AsyncFramework async;
   private final Managed<CuratorFramework> curator;
   private final ExecutorService executor;
-  private final ResolvableFuture<Void> components;
 
   @Inject
   public ZookeeperSync(
@@ -57,11 +56,12 @@ public class ZookeeperSync implements LifeCycle, Sync {
     this.async = async;
     this.curator = curator;
     this.executor = executor;
-    this.components = async.future();
   }
 
   @Override
-  public AsyncFuture<Void> registerLeader(final LeaderCallback callback) {
+  public AsyncFuture<Listener> registerLeader(
+    final String leaderId, final LeaderCallback callback
+  ) {
     final Borrowed<CuratorFramework> borrow = curator.borrow();
     final CuratorFramework curator = borrow.get();
 
@@ -139,12 +139,20 @@ public class ZookeeperSync implements LifeCycle, Sync {
     };
 
     final LeaderSelector leader = new LeaderSelector(curator, "/leader", executor, listener);
+    leader.setId(leaderId);
 
     return async.call(() -> {
       leader.autoRequeue();
       leader.start();
-      components.onFinished(borrow::release);
-      return null;
+
+      return (Listener) () -> {
+        final AsyncFuture<Void> stop = async.call(() -> {
+          leader.close();
+          return null;
+        });
+
+        return stop.onFinished(borrow::release);
+      };
     });
   }
 
@@ -188,13 +196,13 @@ public class ZookeeperSync implements LifeCycle, Sync {
       }
     });
 
-    AsyncFuture<Void> startup = async.call(() -> {
-      assign.start();
-      return null;
-    });
+    AsyncFuture<Void> startup = createMembersNode(memberId);
 
     startup = startup.lazyTransform(v -> {
-      return async.collectAndDiscard(ImmutableList.of(createMembersNode(memberId)));
+      return async.call(() -> {
+        assign.start();
+        return null;
+      });
     });
 
     return startup.directTransform(v -> () -> {
@@ -246,8 +254,6 @@ public class ZookeeperSync implements LifeCycle, Sync {
 
   @Override
   public AsyncFuture<Void> assignTask(final String memberId, final String taskId) {
-    log.info("Assigning {}/{}", memberId, taskId);
-
     return bind(op -> op
         .create()
         .creatingParentContainersIfNeeded()
@@ -303,7 +309,6 @@ public class ZookeeperSync implements LifeCycle, Sync {
 
   private AsyncFuture<Void> stop() {
     // make sure components release all their resources
-    components.resolve(null);
     return curator.stop();
   }
 
