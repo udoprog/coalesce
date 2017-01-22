@@ -1,0 +1,15 @@
+dependency-reduced-pom.xml
+/.cache
+target
+*.log
+*~
+*.pyc
+bin
+/*.json
+/*.png
+/*.log
+/*.gz
+*.iml
+.idea
+/reports/
+/assets/out/

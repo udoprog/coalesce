@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "eu.toolchain.coalesce.proto";
+option java_outer_classname = "ServiceProto";
+
+package coalesce;
+
+service Coalesce {
+    rpc GiveTask(Task) returns (GiveTaskReply) {}
+}
+
+message Task {
+    string id = 1;
+}
+
+message GiveTaskReply {
+}

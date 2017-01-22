@@ -1,0 +1,5 @@
+taskSource:
+  type: directory
+  paths:
+    - /foo
+    - /bar

@@ -1,0 +1,7 @@
+sync:
+  type: local
+
+taskSource:
+  type: directory
+
+syncParallelism: 20
